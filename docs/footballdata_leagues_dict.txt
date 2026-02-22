@@ -1,0 +1,76 @@
+Legend dictionary for each league 
+
+Germany
+
+BL1 – Bundesliga
+
+BL2 – 2. Bundesliga
+
+BL3 – 3. Liga
+
+DFB – DFB Pokal
+
+England
+
+PL – Premier League
+
+ELC – Championship
+
+EL1 – League One
+
+EL2 – League Two
+
+FAC – FA Cup
+
+FLC – League Cup
+
+COM – Community Shield
+
+ENL – National League
+
+Spain
+
+PD – La Liga
+
+SD – Segunda División
+
+CDR – Copa del Rey
+
+Italy
+
+SA – Serie A
+
+SB – Serie B
+
+France
+
+FL1 – Ligue 1
+
+FL2 – Ligue 2
+
+Netherlands
+
+DED – Eredivisie
+
+Portugal
+
+PPL – Primeira Liga
+
+Brazil
+
+BSA – Série A
+
+International / UEFA
+
+CL – Champions League
+
+UCL – (alias used historically)
+
+EL – Europa League
+
+ESC – UEFA Super Cup
+
+WC – FIFA World Cup
+
+EC – European Championship
+
