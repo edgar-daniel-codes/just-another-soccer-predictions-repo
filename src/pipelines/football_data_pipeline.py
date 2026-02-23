@@ -18,9 +18,8 @@ import subprocess
 ### Parameters --------------------------------------------------------------------
 
 
-LEAGUES = ['BL1','BL2','BL3','DFB','PL','ELC','EL1','EL2','FAC','FLC','COM','ENL',
-           'PD','SD','CDR','SA','SB','FL1','FL2','DED','PPL','BSA','CL','EL','UCL',
-           'ESC','WC','EC' ]
+
+LEAGUES = ['PL','BL1', 'PD', 'SA', 'FL1', 'ELC']
 
 YEARS = list(range(2014, 2024))
 
