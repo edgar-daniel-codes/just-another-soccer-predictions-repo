@@ -14,6 +14,7 @@ PROC_DATA_DIR = "./data/proc/footballdata_uk/"
 CLEAN_DATA_DIR = "./data/clean/footballdata_uk/"
 
 RAW_HISTORIC_FILENAME = "footballdatauk_historic.csv"
+PROC_HISTORIC_FILENAME = "footballdatauk_historic"
 
 DIR_LOG = "./logs/"
 FILE_LOG = "footballdataorg.log"
@@ -28,7 +29,7 @@ import numpy as np
 import os
 from pathlib import Path
 from typing import Any
-
+import shutil
 
 
 # Make sure directories exist 
@@ -47,7 +48,6 @@ def _concat_files(RAW_DATA_DIR:str,RAW_HISTORIC_FILENAME:str, logger:Any)->None:
 
     raw_dir = Path(RAW_DATA_DIR)
     out_path = raw_dir / RAW_HISTORIC_FILENAME
-    first_write = True
 
     country_list = os.listdir(RAW_DATA_DIR)
 
@@ -64,33 +64,46 @@ def _concat_files(RAW_DATA_DIR:str,RAW_HISTORIC_FILENAME:str, logger:Any)->None:
         if not country_dir.is_dir():
             continue
 
+        df_country_list = []
         for csv_path in country_dir.rglob("*.csv"):
 
-            logger.info(f"-- Appending file {csv_path}")
+            logger.info(f"-- Appending files for country {country}")
 
             try:
-                for chunk in pd.read_csv(
+                df_aux = pd.read_csv(
                     csv_path,
-                    chunksize=200_000,
                     encoding="latin-1",
                     on_bad_lines="skip",
                     engine="python",
-                ):
-                    #chunk["country"] = country
-                    #chunk["source_file"] = csv_path.name
-                    chunk.to_csv(
-                        out_path,
-                        mode="w" if first_write else "a",
-                        index=False,
-                        header=first_write,
-                    )
-                    first_write = False
+                )
+                df_aux["country"] = country
+                df_aux["source_file"] = csv_path.name
+                
+                df_country_list.append(df_aux)
 
                 logger.info(f"- File {csv_path} appended.")
 
             except Exception as e:
-                logger.info(f"- Failed file {csv_path} append. \n {e}")
+                logger.info(f"- Failed file appending for {csv_path}. \n {e}")
                 continue
+
+        try:
+            pd.concat(df_country_list).to_csv(
+                        RAW_DATA_DIR + country + "_hist.csv",
+                        index=False,
+                    )
+            logger.info(f"Country file saved for: {country}")
+
+        except Exception as e:
+            logger.warning(f"Failed country file for {country}")
+
+        try:
+            shutil.rmtree(Path(RAW_DATA_DIR) / country)
+            logger.info(f"Original Folder removed for: {country}")
+
+        except Exception as e:
+            logger.warning(f"Failed country folder removed {country}")
+
 
 
 
@@ -116,8 +129,8 @@ def _get_column_stats(df:pd.DataFrame, alpha:float, logger:Any)-> pd.DataFrame:
 
 
     stats_df = pd.DataFrame(stats_dict)
-    stats_df = stats_df.query(f""" null_pct <= {1-alpha} """)
-    print(stats_df)
+    logger.info(f"Data Stats: {stats_df}")
+
 
 
 
@@ -142,24 +155,11 @@ if __name__=="__main__":
     logger.addHandler(file)
 
 
+    _concat_files(RAW_DATA_DIR,RAW_HISTORIC_FILENAME, logger)
 
-    # File Creation 
-    #_concat_files(RAW_DATA_DIR,RAW_HISTORIC_FILENAME, logger)
+   # _save_file(RAW_DATA_DIR, RAW_HISTORIC_FILENAME
+   #            ,PROC_DATA_DIR, PROC_HISTORIC_FILENAME,  
+   #            logger)
 
-    # Standarize common columns 
-
-    chunks = pd.read_csv(
-        RAW_DATA_DIR+RAW_HISTORIC_FILENAME,
-        encoding="latin-1",
-        engine="python",
-        on_bad_lines="skip",
-        chunksize=500_000,
-        #low_memory=False,
-    )
-
-    df = pd.concat(chunks, ignore_index=True, sort=False)
-
-
-    _get_column_stats(df, alpha = 0.9, logger=logger)
 
 

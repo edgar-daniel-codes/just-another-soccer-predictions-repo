@@ -48,6 +48,7 @@ The [Football Data UK](https://www.football-data.co.uk/englandm.php) is one of t
 Firs we use the 'etl_utils_footballdata_uk_get_links.py' script to get all avilable leagues and tags:
 
 ```bash 
+mkdir ./data/raw/footballdata_uk/
 curl -fsSL "$URL" | python src/etl/etl_utils_footballdata_uk_get_links.py "https://www.football-data.co.uk" > ./data/raw/footballdata_uk/links.txt
 ```
 
@@ -55,35 +56,34 @@ curl -fsSL "$URL" | python src/etl/etl_utils_footballdata_uk_get_links.py "https
 Here are the following url for each League DataBase:
 
 ```txt
-
 section,label,url
-Main Leagues,England Football Results,https://www.football-data.co.uk/data.php/englandm.php
-Main Leagues,Scotland Football Results,https://www.football-data.co.uk/data.php/scotlandm.php
-Main Leagues,Germany Football Results,https://www.football-data.co.uk/data.php/germanym.php
-Main Leagues,Italy Football Results,https://www.football-data.co.uk/data.php/italym.php
-Main Leagues,Spain Football Results,https://www.football-data.co.uk/data.php/spainm.php
-Main Leagues,France Football Results,https://www.football-data.co.uk/data.php/francem.php
-Main Leagues,Netherlands Football Results,https://www.football-data.co.uk/data.php/netherlandsm.php
-Main Leagues,Belgium Football Results,https://www.football-data.co.uk/data.php/belgiumm.php
-Main Leagues,Portugal Football Results,https://www.football-data.co.uk/data.php/portugalm.php
-Main Leagues,Turkey Football Results,https://www.football-data.co.uk/data.php/turkeym.php
-Main Leagues,Greece Football Results,https://www.football-data.co.uk/data.php/greecem.php
-Extra Leagues,Argentina Football Results,https://www.football-data.co.uk/data.php/Argentina.php
-Extra Leagues,Austria Football Results,https://www.football-data.co.uk/data.php/Austria.php
-Extra Leagues,Brazil Football Results,https://www.football-data.co.uk/data.php/Brazil.php
-Extra Leagues,China Football Results,https://www.football-data.co.uk/data.php/China.php
-Extra Leagues,Denmark Football Results,https://www.football-data.co.uk/data.php/Denmark.php
-Extra Leagues,Finland Football Results,https://www.football-data.co.uk/data.php/Finland.php
-Extra Leagues,Ireland Football Results,https://www.football-data.co.uk/data.php/Ireland.php
-Extra Leagues,Japan Football Results,https://www.football-data.co.uk/data.php/Japan.php
-Extra Leagues,Mexico Football Results,https://www.football-data.co.uk/data.php/Mexico.php
-Extra Leagues,Norway Football Results,https://www.football-data.co.uk/data.php/Norway.php
-Extra Leagues,Poland Football Results,https://www.football-data.co.uk/data.php/Poland.php
-Extra Leagues,Romania Football Results,https://www.football-data.co.uk/data.php/Romania.php
-Extra Leagues,Russia Football Results,https://www.football-data.co.uk/data.php/Russia.php
-Extra Leagues,Sweden Football Results,https://www.football-data.co.uk/data.php/Sweden.php
-Extra Leagues,Switzerland Football Results,https://www.football-data.co.uk/data.php/Switzerland.php
-Extra Leagues,USA Football Results,https://www.football-data.co.uk/data.php/USA.php
+Main Leagues,England Football Results,https://www.football-data.co.uk/englandm.php
+Main Leagues,Scotland Football Results,https://www.football-data.co.uk/scotlandm.php
+Main Leagues,Germany Football Results,https://www.football-data.co.uk/germanym.php
+Main Leagues,Italy Football Results,https://www.football-data.co.uk/italym.php
+Main Leagues,Spain Football Results,https://www.football-data.co.uk/spainm.php
+Main Leagues,France Football Results,https://www.football-data.co.uk/francem.php
+Main Leagues,Netherlands Football Results,https://www.football-data.co.uk/netherlandsm.php
+Main Leagues,Belgium Football Results,https://www.football-data.co.uk/belgiumm.php
+Main Leagues,Portugal Football Results,https://www.football-data.co.uk/portugalm.php
+Main Leagues,Turkey Football Results,https://www.football-data.co.uk/turkeym.php
+Main Leagues,Greece Football Results,https://www.football-data.co.uk/greecem.php
+Extra Leagues,Argentina,https://www.football-data.co.uk/argentina.php
+Extra Leagues,Austria,https://www.football-data.co.uk/austria.php
+Extra Leagues,Brazil,https://www.football-data.co.uk/brazil.php
+Extra Leagues,China,https://www.football-data.co.uk/china.php
+Extra Leagues,Denmark,https://www.football-data.co.uk/denmark.php
+Extra Leagues,Finland,https://www.football-data.co.uk/finland.php
+Extra Leagues,Ireland,https://www.football-data.co.uk/ireland.php
+Extra Leagues,Japan,https://www.football-data.co.uk/japan.php
+Extra Leagues,Mexico,https://www.football-data.co.uk/mexico.php
+Extra Leagues,Norway,https://www.football-data.co.uk/norway.php
+Extra Leagues,Poland,https://www.football-data.co.uk/poland.php
+Extra Leagues,Romania,https://www.football-data.co.uk/romania.php
+Extra Leagues,Russia,https://www.football-data.co.uk/russia.php
+Extra Leagues,Sweden,https://www.football-data.co.uk/sweden.php
+Extra Leagues,Switzerland,https://www.football-data.co.uk/switzerland.php
+Extra Leagues,USA,https://www.football-data.co.uk/usa.php
 ```
 
 For each League link, we run the following code './lib/etl_footballdata_uk_massive_download.zsh' on terminal to mass download all available files: 

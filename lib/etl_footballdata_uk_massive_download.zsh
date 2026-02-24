@@ -25,7 +25,7 @@ tail -n +2 "$csv_file" | while IFS=',' read -r section label url; do
   mkdir -p "$target_dir"
 
   wget -r -np \
-    -A "*.csv,*.CSV,*.txt,*.TXT,*.xlsx,*.XLSX" \
+    -A "*.csv,*.CSV,*.txt,*.TXT" \
     --user-agent="Mozilla/5.0 (X11; Linux x86_64)" \
     --referer="https://www.football-data.co.uk/" \
     --wait=2 --random-wait --limit-rate=500k \
