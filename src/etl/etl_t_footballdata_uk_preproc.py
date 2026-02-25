@@ -32,6 +32,12 @@ from typing import Any
 import shutil
 
 
+from elt_utils_footballdata_uk_format_columns import *
+
+pd.set_option("display.max_columns", None)
+pd.set_option("display.max_rows", None)
+
+
 # Make sure directories exist 
 os.makedirs(DIR_LOG, exist_ok=True)
 os.makedirs(os.path.dirname(DIR_LOG + FILE_LOG), exist_ok=True)
@@ -44,7 +50,7 @@ os.makedirs(CLEAN_DATA_DIR, exist_ok=True)
 ### Load and Normalizing   --------------------------------------------------------
 
 
-def _concat_files(RAW_DATA_DIR:str,RAW_HISTORIC_FILENAME:str, logger:Any)->None:
+def _concat_files(RAW_DATA_DIR:str, logger:Any)->None:
 
     raw_dir = Path(RAW_DATA_DIR)
     out_path = raw_dir / RAW_HISTORIC_FILENAME
@@ -107,7 +113,7 @@ def _concat_files(RAW_DATA_DIR:str,RAW_HISTORIC_FILENAME:str, logger:Any)->None:
 
 
 
-def _get_column_stats(df:pd.DataFrame, alpha:float, logger:Any)-> pd.DataFrame:
+def _get_column_stats(df:pd.DataFrame, alpha:float, logger:Any)-> Any:
 
     col_list = df.columns.to_list()
 
@@ -132,7 +138,67 @@ def _get_column_stats(df:pd.DataFrame, alpha:float, logger:Any)-> pd.DataFrame:
     logger.info(f"Data Stats: {stats_df}")
 
 
+def _save_files(df:pd.DataFrame, DIR:str,FILE_NAME:str , logger :Any):
 
+    # Main match data 
+    try:
+        (
+            df
+            .filter(["SOURCE_FILE", "COUNTRY","LEAGUE", 
+                     "HOME_TEAM", "AWAY_TEAM", "FT_HOME_LEAGUES", "FT_AWAY_GOALS", 
+                     "FT_RESULT"])
+            .dropna()
+        ).to_parquet(
+            DIR + FILE_NAME + "_matches_ft",
+            engine="pyarrow",
+            partition_cols=["COUNTRY", "LEAGUE"],  
+            index=False
+        )
+
+        logger.info(f"Matches saved in {DIR + FILE_NAME + '_matches_ft'}. ")
+    except Exception as e:
+        logger.warning(f"Error saving parquet file: \n {e}.")
+
+
+    # Half Time Results 
+    try:
+        (
+            df
+            .filter(["SOURCE_FILE", "COUNTRY","LEAGUE", 
+                     "HOME_TEAM", "AWAY_TEAM", "FT_HOME_LEAGUES", "FT_AWAY_GOALS", 
+                     "FT_RESULT", "HT_HOME_GOALS", "HT_AWAY_GOALS", "HT_RESULT"])
+            .dropna()
+        ).to_parquet(
+            DIR + FILE_NAME + '_matches_ht',
+            engine="pyarrow",
+            partition_cols=["COUNTRY", "LEAGUE"],  
+            index=False
+        )
+
+        logger.info(f"Matches saved in {DIR + FILE_NAME + '_matches_ft'}. ")
+    except Exception as e:
+        logger.warning(f"Error saving parquet file: \n {e}.")
+
+    # Other stats 
+    try:
+        (
+            df
+            .filter(["SOURCE_FILE", "COUNTRY","LEAGUE", 
+                     "HOME_TEAM", "AWAY_TEAM", "FT_HOME_LEAGUES", "FT_AWAY_GOALS", 
+                     "FT_RESULT", "HT_HOME_GOALS", "HT_AWAY_GOALS", "HT_RESULT"
+                     , "HS", "AS", "HST", "AST", "HF", "AF", "HC", "AC", "HY", "AY"
+                     , "HR", "AR"])
+            .dropna()
+        ).to_parquet(
+            DIR + FILE_NAME + '_matches_complement',
+            engine="pyarrow",
+            partition_cols=["COUNTRY", "LEAGUE"],  
+            index=False
+        )
+
+        logger.info(f"Matches saved in {DIR + FILE_NAME + '_matches_ft'}. ")
+    except Exception as e:
+        logger.warning(f"Error saving parquet file: \n {e}.")
 
 if __name__=="__main__":
 
@@ -155,11 +221,27 @@ if __name__=="__main__":
     logger.addHandler(file)
 
 
-    _concat_files(RAW_DATA_DIR,RAW_HISTORIC_FILENAME, logger)
+    #_concat_files(RAW_DATA_DIR, logger)
 
-   # _save_file(RAW_DATA_DIR, RAW_HISTORIC_FILENAME
-   #            ,PROC_DATA_DIR, PROC_HISTORIC_FILENAME,  
-   #            logger)
+    files = os.listdir(RAW_DATA_DIR)
+    files = [RAW_DATA_DIR + x for x in files]
+
+    result = standardize_football_data_csvs(
+        csv_files=files,
+        default_country="Turkey",
+        keep_only_core=False,
+    )
+
+    logger.info("Shared columns across ALL files:")
+    logger.info(result.shared_columns)
+
+    logger.info("\nStandardized combined shape:", result.df.shape)
+    logger.info(result.df.head())
+
+    _get_column_stats(result.df, alpha=0.9, logger= logger)
+
+    _save_files(result.df, PROC_DATA_DIR,PROC_HISTORIC_FILENAME,logger)
+
 
 
 
