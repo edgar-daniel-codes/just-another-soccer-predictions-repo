@@ -27,7 +27,7 @@ In the following sections we define the exact ETL process and usage of the scrip
 
 ### Extract
 
-**Football Data Org **
+**Football Data Org**
 
 The script, *etl_Utils_footballdata.py*, contains the necessary functions to create the API client, retrieve soccer football data, and perform a simple transformation to save it into usable raw tables. 
 
@@ -93,6 +93,39 @@ chmod +x ./lib/etl_footballdata_uk_massive_download.zsh
 ./lib/etl_footballdata_uk_massive_download.zsh ./data/raw/footballdata_uk/links.txt
 ```
 
+
+**Statsbom Open Data**
+
+Hudl Statsbomb is one of the world's leading football analytics and data collection companies. By opening match, player, and event data via their open data repository, they hope to encourage the development of new analytical insights from football leagues for enthusiasts and professionals alike. 
+
+First, we pull the open data provided on the [Official Statsbomb Repository](https://github.com/statsbomb/open-data/tree/master/data). 
+
+
+```bash 
+mkdir -p data/raw/statsbomb_open_repo
+cd data/raw/statsbomb_open_repo
+
+git init open-data
+cd open-data
+
+git remote add origin https://github.com/statsbomb/open-data.git
+git config core.sparseCheckout true
+
+printf "data/\n" > .git/info/sparse-checkout
+
+git fetch --depth=1 origin master
+git checkout master
+
+cd ..
+mv open-data/data/* .
+rm -r open-data
+```
+
+Now , with the python code 'etl_t_statsbomb_from_json_to_parquet.py' process the original JSON files downloaded before into a parquet files to a further data exploration and cleaning at scale. 
+
+```bash
+python src/etl/etl_t_statsbomb_from_json_to_parquet.py --data-root data/raw/statsbomb_open_repo/ --out-root data/proc/statsbomb_open_repo/ --log-dir logs/ --log-file statsbomb.log
+```
 
 
 

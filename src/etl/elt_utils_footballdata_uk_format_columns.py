@@ -238,7 +238,8 @@ def _standardize_semantics(
 
     # DATE parsing (Football-Data notes: dd/mm/yy) where possible
     if "DATE" in df.columns:
-        df["DATE"] = pd.to_datetime(df["DATE"], errors="coerce", dayfirst=True)
+        df["DATE"] = df["DATE"].astype("str").fillna("")
+    #    df["DATE"] = pd.to_datetime(df["DATE"], errors="coerce", dayfirst=True)
 
     # TIME: keep as string (times can be missing/blank)
     if "TIME" in df.columns:

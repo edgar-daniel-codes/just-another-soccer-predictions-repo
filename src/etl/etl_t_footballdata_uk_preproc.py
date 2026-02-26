@@ -144,10 +144,13 @@ def _save_files(df:pd.DataFrame, DIR:str,FILE_NAME:str , logger :Any):
     try:
         (
             df
-            .filter(["SOURCE_FILE", "COUNTRY","LEAGUE", 
-                     "HOME_TEAM", "AWAY_TEAM", "FT_HOME_LEAGUES", "FT_AWAY_GOALS", 
+            .filter(["SOURCE_FILE", "COUNTRY","LEAGUE", "DIV", "DATE",
+                     "HOME_TEAM", "AWAY_TEAM", "FT_HOME_GOALS", "FT_AWAY_GOALS", 
                      "FT_RESULT"])
-            .dropna()
+            .dropna(subset=["SOURCE_FILE", "COUNTRY", "DATE",
+                     "HOME_TEAM", "AWAY_TEAM", "FT_HOME_GOALS", "FT_AWAY_GOALS", 
+                     "FT_RESULT"])
+            .fillna("")
         ).to_parquet(
             DIR + FILE_NAME + "_matches_ft",
             engine="pyarrow",
@@ -164,10 +167,13 @@ def _save_files(df:pd.DataFrame, DIR:str,FILE_NAME:str , logger :Any):
     try:
         (
             df
-            .filter(["SOURCE_FILE", "COUNTRY","LEAGUE", 
-                     "HOME_TEAM", "AWAY_TEAM", "FT_HOME_LEAGUES", "FT_AWAY_GOALS", 
+            .filter(["SOURCE_FILE", "COUNTRY","LEAGUE", "DIV",  "DATE",
+                     "HOME_TEAM", "AWAY_TEAM", "FT_HOME_GOALS", "FT_AWAY_GOALS", 
                      "FT_RESULT", "HT_HOME_GOALS", "HT_AWAY_GOALS", "HT_RESULT"])
-            .dropna()
+            .dropna(subset=["SOURCE_FILE", "COUNTRY", "DATE",
+                     "HOME_TEAM", "AWAY_TEAM", "FT_HOME_GOALS", "FT_AWAY_GOALS", 
+                     "FT_RESULT", "HT_HOME_GOALS", "HT_AWAY_GOALS", "HT_RESULT"])
+            .fillna("")
         ).to_parquet(
             DIR + FILE_NAME + '_matches_ht',
             engine="pyarrow",
@@ -183,12 +189,17 @@ def _save_files(df:pd.DataFrame, DIR:str,FILE_NAME:str , logger :Any):
     try:
         (
             df
-            .filter(["SOURCE_FILE", "COUNTRY","LEAGUE", 
-                     "HOME_TEAM", "AWAY_TEAM", "FT_HOME_LEAGUES", "FT_AWAY_GOALS", 
+            .filter(["SOURCE_FILE", "COUNTRY","LEAGUE", "DIV", "DATE",
+                     "HOME_TEAM", "AWAY_TEAM", "FT_HOME_GOALS", "FT_AWAY_GOALS", 
                      "FT_RESULT", "HT_HOME_GOALS", "HT_AWAY_GOALS", "HT_RESULT"
                      , "HS", "AS", "HST", "AST", "HF", "AF", "HC", "AC", "HY", "AY"
                      , "HR", "AR"])
-            .dropna()
+            .dropna(subset=["SOURCE_FILE", "COUNTRY", "DATE",
+                     "HOME_TEAM", "AWAY_TEAM", "FT_HOME_GOALS", "FT_AWAY_GOALS", 
+                     "FT_RESULT", "HT_HOME_GOALS", "HT_AWAY_GOALS", "HT_RESULT"
+                     , "HS", "AS", "HST", "AST", "HF", "AF", "HC", "AC", "HY", "AY"
+                     , "HR", "AR"])
+            .fillna("")
         ).to_parquet(
             DIR + FILE_NAME + '_matches_complement',
             engine="pyarrow",
@@ -221,7 +232,7 @@ if __name__=="__main__":
     logger.addHandler(file)
 
 
-    #_concat_files(RAW_DATA_DIR, logger)
+    _concat_files(RAW_DATA_DIR, logger)
 
     files = os.listdir(RAW_DATA_DIR)
     files = [RAW_DATA_DIR + x for x in files]
