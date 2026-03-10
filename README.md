@@ -25,6 +25,7 @@ The following leagues are available from the Football Data API:
 
 In the following sections we define the exact ETL process and usage of the scripts top get the dta from each source with examples for some leagues and seasons. 
 
+
 ### Extract
 
 **Football Data Org**
@@ -41,7 +42,7 @@ python ./src/etl_e_footbaldata.py PL 2023 ./data/raw/footballdata/
 
 
 
-** 
+**Football Data UK**
 
 The [Football Data UK](https://www.football-data.co.uk/englandm.php) is one of the oldest and more reliable data soirces for open data in football data for matches , and given the partnerships with betting pages, the databases included odds payment (useful to infere implicit probability and simulate portfolio scenarios). To extract the data, it is used the following scripts based on web scrapping for getting the .csv and .txt files. 
 
@@ -126,6 +127,107 @@ Now , with the python code 'etl_t_statsbomb_from_json_to_parquet.py' process the
 ```bash
 python src/etl/etl_t_statsbomb_from_json_to_parquet.py --data-root data/raw/statsbomb_open_repo/ --out-root data/proc/statsbomb_open_repo/ --log-dir logs/ --log-file statsbomb.log
 ```
+
+### Transform 
+
+#### Football Data UK
+
+First , we execute the code 'etl_t_statsbomb_from_json_to_parquet.py' the data from Full time, half-time and complementary data into a parquet structure open to cleaning and feature engineering: 
+
+```bash
+python src/etl/etl_t_footballdata_uk_preproc.py
+```
+
+**Football Feature Engineering — Code & Feature Reference - Pipeline Mechanics**
+
+After this, we use '' to clean the original results data into a clean data and creating two derivative tables: the position of teams by date and fitness and a full results and data engineered features ready to model trainiing and fitting. 
+
+
+`cast_columns` → type coercion + LEAGUE fill  
+`add_match_meta` → per-match derived columns  
+`build_features` → rates, momentum, multi-window rolling  
+`infer_league_table` → cumulative season standings  
+`save_parquet` → partitioned output (LEAGUE / YEAR)
+
+Rolling via `_rolling_team`: `groupby(team) → shift(1) → rolling(k).mean()`  
+`shift(1)` enforces strict temporal leakage prevention.  
+Windows default: `k ∈ {3, 5, 10}`
+
+```bash
+python src/etl/etl_t_footballdata_uk_proc.py
+```
+
+Here a brief description of the geenrated results:
+
+**Features:**
+
+- Match Meta
+| Feature | Description |
+|---|---|
+| `SEASON` | Football season label (e.g. `2023/24`, July cutoff) |
+| `YEAR / MONTH / WEEK` | Date decomposition |
+| `FT/HT_TOTAL_GOALS` | Sum of both teams' goals |
+| `FT/HT_GOAL_DIFF` | Home minus away goals |
+| `HOME/AWAY_POINTS` | Points earned per match (3/1/0) |
+| `BTTS` | Both teams scored flag |
+| `OVER_2.5 / OVER_3.5` | Total goals threshold flags |
+| `CLEAN_SHEET_H/A` | Zero goals conceded flag |
+| `HT_FT_SAME` | Half-time result held at full-time |
+| `HOME/AWAY_COMEBACK` | Result reversed from HT to FT |
+
+- Shot & Discipline Rates
+
+| Feature | Formula |
+|---|---|
+| `HOME/AWAY_SHOT_ACC` | `HST / HS` |
+| `HOME/AWAY_CONV_RATE` | `Goals / HST` |
+| `HOME/AWAY_FOUL_RATE` | `Fouls / Shots` |
+| `HOME/AWAY_CARD_RATE` | `(Y+R) / Fouls` |
+| `SHOT_SHARE_HOME` | `HS / (HS+AS)` |
+| `SHOT_ON_T_SHARE_H` | `HST / (HST+AST)` |
+| `CORNER_DIFF` | `HC - AC` |
+
+- Half-Time Momentum
+
+| Feature | Description |
+|---|---|
+| `HT_LEAD_HOME/AWAY` | Team leading at HT |
+| `HT_LEVEL` | Scores level at HT |
+| `SH_GOALS_H/A` | Second-half goals (FT − HT) |
+
+- Rolling Windows (`k ∈ {3, 5, 10}`)
+
+| Feature | Description |
+|---|---|
+| `HOME/AWAY_ROLLk_GF` | Avg goals scored last k matches |
+| `HOME/AWAY_ROLLk_GA` | Avg goals conceded last k matches |
+| `HOME/AWAY_ROLLk_SHOTS` | Avg shots last k matches |
+| `HOME/AWAY_ROLLk_SHOTS_T` | Avg shots on target last k matches |
+| `HOME/AWAY_ROLLk_PTS` | Avg points last k matches (form proxy) |
+| `HOME/AWAY_ROLLk_xGD` | `ROLL_GF − ROLL_GA` (attack/defense balance) |
+| `ROLLk_STRENGTH_DIFF` | `HOME_PTS − AWAY_PTS` (relative form) |
+
+- League Table (`infer_league_table`)
+
+| Feature | Description |
+|---|---|
+| `MP / W / D / L` | Matches played, won, drawn, lost |
+| `GF / GA / GD` | Goals for, against, differential |
+| `PTS / PPG` | Points, points per game |
+| `POSITION` | League rank by points |
+| `FORM_PTS / FORM_STR` | Points + W/D/L string over last `FITNESS_K` matches |
+| `HOME_*/AWAY_*` | All above split by venue |
+
+
+
+## Data Analytics and Modelling 
+
+
+
+
+## Predictive Models 
+
+
 
 
 
